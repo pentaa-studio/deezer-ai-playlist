@@ -156,7 +156,7 @@ export default function Home() {
       {/* Main content - Split layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left side - Conversation */}
-        <div className="flex-1 flex flex-col border-r">
+        <div className="w-96 flex flex-col border-r">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
@@ -223,7 +223,7 @@ export default function Home() {
         </div>
 
         {/* Right side - Playlist */}
-        <div className="w-96 flex flex-col bg-card/30">
+        <div className="flex-1 flex flex-col bg-card/30">
           {/* Playlist header */}
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
