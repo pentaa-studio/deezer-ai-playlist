@@ -53,7 +53,14 @@ export default function Home() {
 
   return (
     <main className="max-w-4xl mx-auto py-12 flex flex-col gap-8">
-      <h1 className="text-3xl font-bold text-center mb-4">Text to Playlist</h1>
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-2">
+          Text to <span className="text-[#a238ff]">Playlist</span>
+        </h1>
+        <p className="text-muted-foreground">
+          Générez des playlists personnalisées avec l'IA et découvrez-les sur Deezer
+        </p>
+      </div>
       
       <form onSubmit={handleSubmit} className="flex gap-2">
         <Input
@@ -62,7 +69,11 @@ export default function Home() {
           placeholder="Ex: Playlist funk joyeuse pour l'été"
           className="flex-1"
         />
-        <Button type="submit" disabled={status === "streaming" || !input}>
+        <Button 
+          type="submit" 
+          disabled={status === "streaming" || !input}
+          className="bg-[#a238ff] hover:bg-[#8b2bdb]"
+        >
           {status === "streaming" ? "Génération..." : "Générer la playlist"}
         </Button>
       </form>

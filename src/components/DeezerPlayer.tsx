@@ -75,7 +75,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
       {/* Main Player */}
       <div className="bg-card border rounded-lg p-4">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center text-white">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center text-white">
             <Music size={32} />
           </div>
           <div className="flex-1">
@@ -89,7 +89,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
             href={`https://www.deezer.com/track/${currentTrack.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-[#a238ff] text-white rounded hover:bg-[#8b2bdb] transition-colors"
           >
             <ExternalLink size={16} />
             Deezer
@@ -120,7 +120,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
               </button>
               <button
                 onClick={togglePlayPause}
-                className="p-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
+                className="p-3 bg-[#a238ff] text-white rounded-full hover:bg-[#8b2bdb] transition-colors"
                 title={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
@@ -172,13 +172,13 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
               key={track.id} 
               className={`flex items-center gap-3 p-2 rounded text-sm cursor-pointer transition-colors ${
                 idx === currentTrackIndex 
-                  ? 'bg-orange-100 border border-orange-300' 
+                  ? 'bg-[#a238ff]/10 border border-[#a238ff]/30' 
                   : 'bg-muted hover:bg-muted/80'
               }`}
               onClick={() => playTrack(idx)}
             >
               <span className="text-muted-foreground w-6 flex items-center justify-center">
-                {idx === currentTrackIndex ? <Music size={16} /> : `${idx + 1}.`}
+                {idx === currentTrackIndex ? <Music size={16} className="text-[#a238ff]" /> : `${idx + 1}.`}
               </span>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{track.title}</div>
@@ -191,7 +191,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
                     e.stopPropagation();
                     playTrack(idx);
                   }}
-                  className="p-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                  className="p-1 bg-[#a238ff] text-white rounded hover:bg-[#8b2bdb] transition-colors"
                   title={`Jouer ${track.title}`}
                 >
                   <Play size={14} />
@@ -229,7 +229,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
             href={`https://www.deezer.com/search/${encodeURIComponent(tracks.map(t => `${t.artist} ${t.title}`).join(' '))}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-1 text-xs bg-[#a238ff] text-white rounded hover:bg-[#8b2bdb] transition-colors"
           >
             <Search size={14} />
             Rechercher sur Deezer
