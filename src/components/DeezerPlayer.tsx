@@ -79,7 +79,20 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
       {/* Main Player */}
       <div className="bg-card border rounded-lg p-4">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center text-white">
+          {currentTrack.cover ? (
+            <img 
+              src={currentTrack.cover} 
+              alt={`Cover de ${currentTrack.album || currentTrack.title}`}
+              className="w-16 h-16 rounded-lg object-cover shadow-md"
+              onError={(e) => {
+                // Fallback to gradient if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <div className={`w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center text-white ${currentTrack.cover ? 'hidden' : ''}`}>
             <Music size={32} />
           </div>
           <div className="flex-1">
@@ -146,22 +159,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
         </div>
       </div>
 
-      {/* Deezer Widget for current track */}
-      <div className="bg-card border rounded-lg overflow-hidden">
-        <div className="p-2 text-sm font-medium border-b bg-muted flex items-center gap-2">
-          <Music size={16} />
-          Widget Deezer - {currentTrack.title}
-        </div>
-        <iframe
-          title="deezer-widget"
-          src={`https://widget.deezer.com/widget/auto/track/${currentTrack.id}`}
-          width="100%"
-          height="200"
-          frameBorder="0"
-          allow="encrypted-media; clipboard-write"
-          className="w-full"
-        />
-      </div>
+
       
       {/* Playlist */}
       <div className="space-y-2">
@@ -184,6 +182,24 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
               <span className="text-muted-foreground w-6 flex items-center justify-center">
                 {idx === currentTrackIndex ? <Music size={16} className="text-[#a238ff]" /> : `${idx + 1}.`}
               </span>
+              
+              {/* Album cover thumbnail */}
+              {track.cover ? (
+                <img 
+                  src={track.cover} 
+                  alt={`Cover de ${track.album || track.title}`}
+                  className="w-10 h-10 rounded object-cover shadow-sm"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded flex items-center justify-center">
+                  <Music size={16} className="text-white" />
+                </div>
+              )}
+              
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{track.title}</div>
                 <div className="text-muted-foreground truncate">{track.artist}</div>
