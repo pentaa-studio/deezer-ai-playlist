@@ -7,6 +7,7 @@ import DeezerPlayer from '@/components/DeezerPlayer';
 import { Track } from '@/lib/generator';
 import { MessageCircle, Music, Loader2, Send, Zap, Search, TrendingUp } from 'lucide-react';
 import AppIcon from '@/components/AppIcon';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat();
@@ -124,10 +125,12 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main content - Split layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left side - Conversation */}
-        <div className="w-96 flex flex-col border-r">
+      {/* Main content - Resizable layout */}
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Left side - Conversation */}
+          <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
+            <div className="h-full flex flex-col border-r">
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-0">
             {messages.length === 0 ? (
@@ -234,12 +237,16 @@ export default function Home() {
             {/* Helper text */}
             <p className="text-xs text-muted-foreground mt-2 text-center">
               L&apos;agent peut rechercher de la musique, créer des playlists et découvrir les tendances
-            </p>
-          </div>
-        </div>
-
-        {/* Right side - Playlist */}
-        <div className="flex-1 flex flex-col bg-card/30">
+                         </p>
+           </div>
+            </div>
+          </ResizablePanel>
+          
+          <ResizableHandle withHandle />
+          
+          {/* Right side - Playlist */}
+          <ResizablePanel defaultSize={70}>
+            <div className="h-full flex flex-col bg-card/30">
           {/* Playlist header */}
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
@@ -289,10 +296,10 @@ export default function Home() {
               </div>
             )}
           </div>
-        </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
-
-
     </div>
   );
 }
