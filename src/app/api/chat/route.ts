@@ -1,6 +1,7 @@
-import { streamText } from 'ai';
+import { streamText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { parsePrompt } from '@/lib/parser';
+import { z } from 'zod';
+import { deezerService } from '@/lib/deezer';
 import { generatePlaylistFromDeezer } from '@/lib/generator';
 
 // TODO: Utiliser function calling pour extraire mood/style/genre
@@ -43,82 +44,164 @@ function extractPlaylistContext(messages: Array<{role: string, content: string}>
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // useChat envoie { messages: [...] }
     const messages = body?.messages || [];
-    const lastMessage = messages[messages.length - 1];
-    const prompt = lastMessage?.content || body?.prompt || "";
     
-    console.log('Received prompt:', prompt);
-    console.log('Conversation length:', messages.length);
+    console.log('Received messages:', messages.length);
     
-    if (!prompt) {
-      return new Response("Prompt manquant", { status: 400 });
+    if (messages.length === 0) {
+      return new Response("Messages manquants", { status: 400 });
     }
-    
-    // Check if we should generate playlist or continue conversation
-    if (shouldGeneratePlaylist(messages)) {
-      console.log('Generating playlist...');
-      
-      // Extract full context from conversation
-      const fullContext = extractPlaylistContext(messages);
-      const { genre, mood, style } = parsePrompt(fullContext);
-      console.log('Parsed from conversation:', { genre, mood, style });
-      
-      // Generate playlist from Deezer API with full conversation context
-      const playlist = await generatePlaylistFromDeezer(genre, mood, 10, fullContext);
-      console.log('Generated playlist from Deezer:', playlist.length, 'tracks');
 
-      // Create playlist title
-      const playlistTitle = `Playlist ${genre || ''} ${mood || ''} ${style || ''}`.trim();
-
-      const result = await streamText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Génère une description narrative courte et engageante pour une playlist basée sur cette conversation : "${fullContext}". Voici les morceaux trouvés : ${JSON.stringify(playlist)}. 
-
-IMPORTANT: À la fin de ta description, ajoute exactement cette ligne :
----PLAYLIST_DATA---
-${JSON.stringify({ title: playlistTitle, tracks: playlist })}
----END_PLAYLIST_DATA---`,
-        system: 'Tu es un expert en musique. Génère une description narrative courte pour une playlist, puis ajoute les données JSON exactement comme demandé.',
-      });
-
-      return result.toDataStreamResponse();
-      
-    } else {
-      console.log('Continuing conversation...');
-      
-      // Continue conversation to better understand user needs
-      const conversationHistory = messages.map((m: {role: string, content: string}) => ({
+    const result = await streamText({
+      model: openai('gpt-4'),
+      messages: messages.map((m: {role: string, content: string}) => ({
         role: m.role,
         content: m.content
-      }));
+      })),
+      system: `Tu es un assistant musical expert et passionné. Tu aides les utilisateurs à découvrir et créer des playlists personnalisées.
 
-      const result = await streamText({
-        model: openai('gpt-3.5-turbo'),
-        messages: [
-          {
-            role: 'system',
-            content: `Tu es un assistant musical expert qui aide à créer des playlists personnalisées. 
+Ton rôle :
+- Discuter de musique de manière naturelle et engageante
+- Poser des questions pertinentes pour comprendre les goûts musicaux
+- Utiliser les outils disponibles pour rechercher de la musique et créer des playlists
+- Donner des recommandations musicales personnalisées
+- Expliquer tes choix musicaux
 
-Ton rôle est de poser des questions pertinentes pour mieux comprendre les goûts et besoins de l'utilisateur avant de générer une playlist.
+Comportement :
+- Sois conversationnel, amical et passionné de musique
+- Pose UNE question à la fois pour ne pas submerger l'utilisateur
+- Utilise les outils quand c'est pertinent (recherche, création de playlist)
+- Partage des anecdotes musicales intéressantes
+- Adapte-toi au niveau de connaissance musicale de l'utilisateur
 
-Pose des questions sur :
-- Le genre musical préféré
-- L'ambiance/mood recherchée  
-- Le contexte d'écoute (sport, travail, détente, fête, etc.)
-- La période/époque musicale
-- Les artistes aimés/détestés
-- L'occasion spéciale
+Quand utiliser les outils :
+- searchMusic : pour explorer des artistes, genres ou morceaux spécifiques
+- createPlaylist : quand l'utilisateur veut générer une playlist complète
+- getPopularTracks : pour découvrir les tendances actuelles`,
 
-Sois conversationnel, amical et pose UNE question à la fois. Quand tu as assez d'informations (après 2-3 échanges), propose de générer la playlist en disant quelque chose comme "Parfait ! Je peux maintenant créer ta playlist. Dis-moi 'génère' quand tu es prêt !"`
-          },
-          ...conversationHistory
-        ]
-      });
+      tools: {
+        searchMusic: tool({
+          description: 'Recherche des morceaux sur Deezer par artiste, titre, genre ou mot-clé',
+          parameters: z.object({
+            query: z.string().describe('Terme de recherche (artiste, titre, genre, etc.)'),
+            limit: z.number().optional().default(5).describe('Nombre de résultats (max 10)')
+          }),
+          execute: async ({ query, limit = 5 }) => {
+            console.log(`Searching music: ${query}`);
+            try {
+              const tracks = await deezerService.searchTracks(query, Math.min(limit, 10));
+              return {
+                success: true,
+                tracks: tracks.map(track => ({
+                  id: track.id,
+                  title: track.title,
+                  artist: track.artist.name,
+                  album: track.album.title,
+                  preview: track.preview,
+                  duration: track.duration
+                })),
+                query
+              };
+            } catch (error) {
+              console.error('Search error:', error);
+              return {
+                success: false,
+                error: 'Erreur lors de la recherche musicale',
+                query
+              };
+            }
+          }
+        }),
 
-      return result.toDataStreamResponse();
-    }
+        createPlaylist: tool({
+          description: 'Crée une playlist personnalisée basée sur les préférences de l\'utilisateur',
+          parameters: z.object({
+            description: z.string().describe('Description détaillée du type de playlist souhaité'),
+            genre: z.string().optional().describe('Genre musical principal'),
+            mood: z.string().optional().describe('Ambiance ou mood recherché'),
+            count: z.number().optional().default(10).describe('Nombre de morceaux (5-20)')
+          }),
+          execute: async ({ description, genre, mood, count = 10 }) => {
+            console.log(`Creating playlist: ${description}`);
+            try {
+              const tracks = await generatePlaylistFromDeezer(
+                genre || null, 
+                mood || null, 
+                Math.min(Math.max(count, 5), 20), 
+                description
+              );
+              
+              const playlistTitle = `Playlist ${genre || ''} ${mood || ''}`.trim() || 'Ma Playlist IA';
+              
+              return {
+                success: true,
+                playlist: {
+                  title: playlistTitle,
+                  tracks: tracks,
+                  description
+                }
+              };
+            } catch (error) {
+              console.error('Playlist creation error:', error);
+              return {
+                success: false,
+                error: 'Erreur lors de la création de la playlist'
+              };
+            }
+          }
+        }),
+
+        getPopularTracks: tool({
+          description: 'Récupère les morceaux populaires du moment',
+          parameters: z.object({
+            genre: z.string().optional().describe('Genre spécifique (optionnel)'),
+            limit: z.number().optional().default(10).describe('Nombre de morceaux (max 15)')
+          }),
+          execute: async ({ genre, limit = 10 }) => {
+            console.log(`Getting popular tracks: ${genre || 'all genres'}`);
+            try {
+              const query = genre ? `${genre} hits 2024` : 'top hits 2024';
+              const tracks = await deezerService.searchTracks(query, Math.min(limit, 15));
+              
+              return {
+                success: true,
+                tracks: tracks.map(track => ({
+                  id: track.id,
+                  title: track.title,
+                  artist: track.artist.name,
+                  album: track.album.title,
+                  preview: track.preview
+                })),
+                genre: genre || 'tous genres'
+              };
+            } catch (error) {
+              console.error('Popular tracks error:', error);
+              return {
+                success: false,
+                error: 'Erreur lors de la récupération des morceaux populaires'
+              };
+            }
+          }
+        })
+      },
+
+      onFinish: async ({ finishReason, usage, text, toolCalls, toolResults }) => {
+        console.log('Finish reason:', finishReason);
+        console.log('Tool calls:', toolCalls?.length || 0);
+        
+        // Si une playlist a été créée, on l'ajoute au message
+        if (toolResults) {
+          for (const result of toolResults) {
+            if (result.toolName === 'createPlaylist' && result.result.success && result.result.playlist) {
+              const playlist = result.result.playlist;
+              console.log('Playlist created:', playlist.title);
+            }
+          }
+        }
+      }
+    });
+
+    return result.toDataStreamResponse();
     
   } catch (error) {
     console.error('API Error:', error);
