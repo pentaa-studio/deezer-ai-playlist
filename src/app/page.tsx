@@ -114,7 +114,7 @@ export default function Home() {
           Text to <span className="text-[#a238ff]">Playlist</span>
         </h1>
         <p className="text-muted-foreground">
-          Discutez avec l'IA pour créer des playlists personnalisées sur Deezer
+          Discutez avec l&apos;IA pour créer des playlists personnalisées sur Deezer
         </p>
       </div>
       
@@ -127,7 +127,7 @@ export default function Home() {
               ? "🎵 Génération de votre playlist en cours..."
               : hasPlaylist 
                 ? "Playlist générée ! Vous pouvez continuer la conversation pour en créer une nouvelle."
-                : "Conversation en cours... L'IA apprend à vous connaître pour créer la playlist parfaite."
+                : "Conversation en cours... L&apos;IA apprend à vous connaître pour créer la playlist parfaite."
             }
           </span>
         </div>
@@ -162,10 +162,10 @@ export default function Home() {
               Exemples de demandes
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>• "Je veux une playlist pour faire du sport"</p>
-              <p>• "Musique calme pour travailler"</p>
-              <p>• "Playlist festive pour une soirée"</p>
-              <p>• "Sons chill pour me détendre"</p>
+              <p>• &quot;Je veux une playlist pour faire du sport&quot;</p>
+              <p>• &quot;Musique calme pour travailler&quot;</p>
+              <p>• &quot;Playlist festive pour une soirée&quot;</p>
+              <p>• &quot;Sons chill pour me détendre&quot;</p>
             </div>
           </div>
           <div className="p-4 border rounded-lg bg-card">
@@ -175,9 +175,9 @@ export default function Home() {
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>1. Décrivez votre besoin musical</p>
-              <p>2. L'IA vous pose des questions</p>
+              <p>2. L&apos;IA vous pose des questions</p>
               <p>3. Répondez pour affiner vos goûts</p>
-              <p>4. Dites "génère" pour créer la playlist</p>
+              <p>4. Dites &quot;génère&quot; pour créer la playlist</p>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function Home() {
         <section className="flex flex-col gap-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <MessageCircle size={20} />
-            Conversation avec l'IA
+            Conversation avec l&apos;IA
           </h2>
           {messages.length === 0 && (
             <p className="text-center text-muted-foreground p-8 border rounded-lg">
@@ -252,7 +252,7 @@ export default function Home() {
           ) : (
             <p className="text-center text-muted-foreground p-8 border rounded-lg">
               {hasConversation 
-                ? "Continuez la conversation et dites 'génère' pour créer votre playlist"
+                ? "Continuez la conversation et dites &apos;génère&apos; pour créer votre playlist"
                 : "Commencez une conversation pour voir votre playlist ici"
               }
             </p>

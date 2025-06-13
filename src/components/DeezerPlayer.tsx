@@ -21,6 +21,19 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Auto-play next track when current ends
+  const handleTrackEnd = () => {
+    const nextIndex = (currentTrackIndex + 1) % tracks.length;
+    setCurrentTrackIndex(nextIndex);
+    setIsPlaying(true);
+  };
+
+  useEffect(() => {
+    if (audioRef.current && isPlaying) {
+      audioRef.current.play();
+    }
+  }, [currentTrackIndex, isPlaying]);
+
   if (!tracks || tracks.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground">
@@ -57,16 +70,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
     }
   };
 
-  // Auto-play next track when current ends
-  const handleTrackEnd = () => {
-    nextTrack();
-  };
 
-  useEffect(() => {
-    if (audioRef.current && isPlaying) {
-      audioRef.current.play();
-    }
-  }, [currentTrackIndex, isPlaying]);
 
   return (
     <div className="w-full space-y-4">

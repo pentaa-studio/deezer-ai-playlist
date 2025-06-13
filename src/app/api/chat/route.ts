@@ -9,7 +9,7 @@ import { generatePlaylistFromDeezer } from '@/lib/generator';
 export const runtime = 'edge';
 
 // Check if user wants to generate playlist based on conversation
-function shouldGeneratePlaylist(messages: any[]): boolean {
+function shouldGeneratePlaylist(messages: Array<{role: string, content: string}>): boolean {
   const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
   const conversationLength = messages.length;
   
@@ -31,7 +31,7 @@ function shouldGeneratePlaylist(messages: any[]): boolean {
 }
 
 // Extract playlist requirements from conversation
-function extractPlaylistContext(messages: any[]): string {
+function extractPlaylistContext(messages: Array<{role: string, content: string}>): string {
   const userMessages = messages
     .filter(m => m.role === 'user')
     .map(m => m.content)
@@ -89,7 +89,7 @@ ${JSON.stringify({ title: playlistTitle, tracks: playlist })}
       console.log('Continuing conversation...');
       
       // Continue conversation to better understand user needs
-      const conversationHistory = messages.map((m: any) => ({
+      const conversationHistory = messages.map((m: {role: string, content: string}) => ({
         role: m.role,
         content: m.content
       }));

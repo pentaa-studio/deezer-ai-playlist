@@ -1,4 +1,12 @@
 // Deezer API integration
+interface WindowWithDZ extends Window {
+  DZ?: {
+    init: (config: { appId: string; channelUrl: string }) => void;
+    login: (callback: (response: { authResponse?: { accessToken: string } }) => void, options: { perms: string }) => void;
+    api: (endpoint: string, method?: string, params?: Record<string, unknown>, callback?: (response: unknown) => void) => void;
+  };
+}
+
 export interface DeezerTrack {
   id: number;
   title: string;
@@ -38,7 +46,7 @@ export class DeezerService {
     return new Promise((resolve, reject) => {
       if (typeof window !== 'undefined') {
         // Check if DZ is already loaded
-        if ((window as any).DZ) {
+        if ((window as WindowWithDZ).DZ) {
           this.initializeDZ();
           resolve();
           return;
@@ -50,7 +58,7 @@ export class DeezerService {
         script.onload = () => {
           // Wait a bit for DZ to be available
           setTimeout(() => {
-            if ((window as any).DZ) {
+            if ((window as WindowWithDZ).DZ) {
               this.initializeDZ();
               resolve();
             } else {
@@ -68,7 +76,7 @@ export class DeezerService {
 
   private initializeDZ(): void {
     try {
-      (window as any).DZ.init({
+      (window as WindowWithDZ).DZ?.init({
         appId: this.appId,
         channelUrl: `${window.location.origin}/channel.html`,
       });
@@ -87,8 +95,8 @@ export class DeezerService {
     }
 
     return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && (window as any).DZ) {
-        (window as any).DZ.login((response: any) => {
+      if (typeof window !== 'undefined' && (window as WindowWithDZ).DZ) {
+        (window as WindowWithDZ).DZ?.login((response) => {
           if (response.authResponse) {
             this.accessToken = response.authResponse.accessToken;
             resolve(true);
@@ -125,18 +133,19 @@ export class DeezerService {
     }
 
     return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && (window as any).DZ) {
+      if (typeof window !== 'undefined' && (window as WindowWithDZ).DZ) {
         // Create playlist
-        (window as any).DZ.api('/user/me/playlists', 'POST', { title }, (response: any) => {
-          if (response.id) {
+        (window as WindowWithDZ).DZ?.api('/user/me/playlists', 'POST', { title }, (response) => {
+          const playlistResponse = response as { id?: number };
+          if (playlistResponse.id) {
             // Add tracks to playlist if any
             if (trackIds.length > 0) {
               const trackList = trackIds.join(',');
-              (window as any).DZ.api(`/playlist/${response.id}/tracks`, 'POST', { songs: trackList }, () => {
-                resolve(response.id);
+              (window as WindowWithDZ).DZ?.api(`/playlist/${playlistResponse.id}/tracks`, 'POST', { songs: trackList }, () => {
+                resolve(playlistResponse.id!);
               });
             } else {
-              resolve(response.id);
+              resolve(playlistResponse.id);
             }
           } else {
             console.error('Failed to create playlist:', response);
@@ -150,12 +159,12 @@ export class DeezerService {
   }
 
   // Get user info
-  async getUserInfo(): Promise<any> {
+  async getUserInfo(): Promise<unknown> {
     if (!this.isInitialized || !this.accessToken) return null;
 
     return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && (window as any).DZ) {
-        (window as any).DZ.api('/user/me', (response: any) => {
+      if (typeof window !== 'undefined' && (window as WindowWithDZ).DZ) {
+        (window as WindowWithDZ).DZ?.api('/user/me', undefined, undefined, (response) => {
           resolve(response);
         });
       } else {

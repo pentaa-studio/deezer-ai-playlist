@@ -192,5 +192,5 @@ export function generatePlaylist(count: number = 10): Track[] {
 function shuffle<T>(arr: T[]): T[] {
   return arr.map(v => [Math.random(), v] as [number, T])
     .sort((a, b) => a[0] - b[0])
-    .map(([_, v]) => v);
+    .map(([, v]) => v);
 } 
