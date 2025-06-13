@@ -9,10 +9,10 @@ export default function PlaylistCard({ title, artist, tag }: Track) {
         <div className="font-semibold">{title}</div>
         <div className="text-sm text-muted-foreground">{artist}</div>
       </div>
-      {tag === "fav" ? (
-        <span className="flex items-center gap-1 text-yellow-500"><StarIcon /> <span>★ Fav</span></span>
+      {tag === "search" ? (
+        <span className="flex items-center gap-1 text-blue-500"><StarIcon /> <span>🎯 Search</span></span>
       ) : (
-        <span className="flex items-center gap-1 text-red-500"><span>🔥</span> <span>🔥 Buzz</span></span>
+        <span className="flex items-center gap-1 text-red-500"><span>🔥</span> <span>Popular</span></span>
       )}
       <Button variant="outline" size="icon" title="Play (simulé)"><PlayIcon /></Button>
     </div>

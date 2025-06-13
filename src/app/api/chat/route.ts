@@ -1,7 +1,7 @@
 import { streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { parsePrompt } from '@/lib/parser';
-import { generatePlaylist } from '@/lib/generator';
+import { generatePlaylistFromDeezer } from '@/lib/generator';
 
 // TODO: Utiliser function calling pour extraire mood/style/genre
 // TODO: Ajouter une validation avec Zod
@@ -26,13 +26,22 @@ export async function POST(req: Request) {
     const { genre, mood, style } = parsePrompt(prompt);
     console.log('Parsed:', { genre, mood, style });
     
-    const playlist = generatePlaylist(10);
-    console.log('Generated playlist:', playlist.length, 'tracks');
+    // Generate playlist from Deezer API
+    const playlist = await generatePlaylistFromDeezer(genre, mood, 10);
+    console.log('Generated playlist from Deezer:', playlist.length, 'tracks');
+
+    // Create playlist title
+    const playlistTitle = `Playlist ${genre || ''} ${mood || ''} ${style || ''}`.trim();
 
     const result = await streamText({
       model: openai('gpt-3.5-turbo'),
-      prompt: `Génère une description pour une playlist ${genre || ''} ${mood || ''} ${style || ''}. Voici les morceaux : ${JSON.stringify(playlist)}`,
-      system: 'Tu es un expert en musique. Génère une description narrative pour une playlist.',
+      prompt: `Génère une description narrative courte et engageante pour une playlist ${genre || ''} ${mood || ''} ${style || ''}. Voici les morceaux : ${JSON.stringify(playlist)}. 
+
+IMPORTANT: À la fin de ta description, ajoute exactement cette ligne :
+---PLAYLIST_DATA---
+${JSON.stringify({ title: playlistTitle, tracks: playlist })}
+---END_PLAYLIST_DATA---`,
+      system: 'Tu es un expert en musique. Génère une description narrative courte pour une playlist, puis ajoute les données JSON exactement comme demandé.',
     });
 
     return result.toDataStreamResponse();
