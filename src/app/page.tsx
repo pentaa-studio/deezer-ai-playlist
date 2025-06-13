@@ -218,8 +218,8 @@ export default function Home() {
                 onChange={handleInputChange}
                 placeholder={
                   hasConversation 
-                    ? "Continuez la conversation avec l'agent..." 
-                    : "Demandez à l'agent de rechercher de la musique ou créer une playlist..."
+                    ? "Continuez la conversation avec TtP..." 
+                    : "Demandez à TtP de rechercher de la musique ou créer une playlist..."
                 }
                 className="pr-12 py-3 text-base"
                 disabled={status === "streaming"}
