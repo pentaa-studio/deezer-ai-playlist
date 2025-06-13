@@ -25,9 +25,10 @@ Prototype Next.js 15 (App Router, TypeScript) pour générer des playlists à pa
    pnpm install
    # ou npm install
    ```
-2. Ajouter une clé OpenAI dans un fichier `.env.local` :
-   ```env
-   OPENAI_API_KEY=sk-...
+2. Copier le fichier `.env.example` en `.env.local` et renseigner votre clé OpenAI :
+   ```bash
+   cp .env.example .env.local
+   # puis éditez .env.local
    ```
 3. Démarrer le serveur de dev :
    ```bash
@@ -44,6 +45,10 @@ Prototype Next.js 15 (App Router, TypeScript) pour générer des playlists à pa
 - `/data/buzz_mock.json` : 30 titres "buzz"
 - `/components/PlaylistCard.tsx` : affichage morceau
 - `/lib/useVoiceInput.ts` : hook vocal (préparé)
+
+## Sécurité
+- **Ne jamais commiter de clé API dans le dépôt.**
+- Utilisez `.env.local` (privé) pour vos clés, et `.env.example` (public) comme référence.
 
 ## TODO
 - Améliorer parsing avec GPT (function calling)

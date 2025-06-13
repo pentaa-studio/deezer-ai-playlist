@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useChat } from "ai/react";
+import { useChat } from '@ai-sdk/react'
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
 
   return (
     <main className="max-w-xl mx-auto py-12 flex flex-col gap-8">
@@ -16,8 +16,8 @@ export default function Home() {
           placeholder="Ex: Playlist funk joyeuse pour l'été"
           className="flex-1"
         />
-        <Button type="submit" disabled={isLoading || !input}>
-          {isLoading ? "Génération..." : "Générer la playlist"}
+        <Button type="submit" disabled={status === "streaming" || !input}>
+          {status === "streaming" ? "Génération..." : "Générer la playlist"}
         </Button>
       </form>
       <section className="flex flex-col gap-4">
