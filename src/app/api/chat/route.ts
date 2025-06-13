@@ -98,6 +98,7 @@ Quand utiliser les outils :
                   artist: track.artist.name,
                   album: track.album.title,
                   preview: track.preview,
+                  cover: track.album.cover_medium || track.album.cover_small || track.album.cover,
                   duration: track.duration
                 })),
                 query
@@ -170,7 +171,8 @@ Quand utiliser les outils :
                   title: track.title,
                   artist: track.artist.name,
                   album: track.album.title,
-                  preview: track.preview
+                  preview: track.preview,
+                  cover: track.album.cover_medium || track.album.cover_small || track.album.cover
                 })),
                 genre: genre || 'tous genres'
               };

@@ -1,5 +1,6 @@
 import { Track } from "@/lib/generator";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { 
   Play, 
   Pause, 
@@ -43,6 +44,17 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
   }
 
   const currentTrack = tracks[currentTrackIndex];
+  
+
+  // Debug: log current track cover
+  useEffect(() => {
+    console.log('Current track:', {
+      title: currentTrack.title,
+      artist: currentTrack.artist,
+      cover: currentTrack.cover,
+      hasCover: !!currentTrack.cover
+    });
+  }, [currentTrack]);
 
   const playTrack = (index: number) => {
     setCurrentTrackIndex(index);
@@ -79,21 +91,23 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
       {/* Main Player */}
       <div className="bg-card border rounded-lg p-4">
         <div className="flex items-center gap-4 mb-4">
-          {currentTrack.cover ? (
-            <img 
-              src={currentTrack.cover} 
-              alt={`Cover de ${currentTrack.album || currentTrack.title}`}
-              className="w-16 h-16 rounded-lg object-cover shadow-md"
-              onError={(e) => {
-                // Fallback to gradient if image fails to load
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          <div className={`w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center text-white ${currentTrack.cover ? 'hidden' : ''}`}>
-            <Music size={32} />
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-md">
+            {currentTrack.cover ? (
+              <Image 
+                src={currentTrack.cover} 
+                alt={`Cover de ${currentTrack.album || currentTrack.title}`}
+                width={64}
+                height={64}
+                className="object-cover"
+                onError={() => {
+                  console.log('Cover failed to load:', currentTrack.cover);
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] flex items-center justify-center text-white">
+                <Music size={32} />
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <h4 className="font-semibold text-lg">{currentTrack.title}</h4>
@@ -184,21 +198,24 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
               </span>
               
               {/* Album cover thumbnail */}
-              {track.cover ? (
-                <img 
-                  src={track.cover} 
-                  alt={`Cover de ${track.album || track.title}`}
-                  className="w-10 h-10 rounded object-cover shadow-sm"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="w-10 h-10 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded flex items-center justify-center">
-                  <Music size={16} className="text-white" />
-                </div>
-              )}
+              <div className="relative w-10 h-10 rounded overflow-hidden shadow-sm">
+                {track.cover ? (
+                  <Image 
+                    src={track.cover} 
+                    alt={`Cover de ${track.album || track.title}`}
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                    onError={() => {
+                      console.log('Thumbnail cover failed to load:', track.cover);
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] flex items-center justify-center">
+                    <Music size={16} className="text-white" />
+                  </div>
+                )}
+              </div>
               
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{track.title}</div>
