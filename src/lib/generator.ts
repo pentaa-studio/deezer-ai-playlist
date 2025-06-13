@@ -21,51 +21,143 @@ function convertDeezerTrack(deezerTrack: DeezerTrack, tag: "search" | "popular")
   };
 }
 
+// Generate smart search queries based on prompt analysis
+function generateSearchQueries(genre: string | null, mood: string | null, prompt: string): string[] {
+  const queries: string[] = [];
+  
+  // Base query with genre and mood
+  if (genre && mood) {
+    queries.push(`${genre} ${mood}`);
+  }
+  
+  // Genre-specific queries
+  if (genre) {
+    switch (genre.toLowerCase()) {
+      case 'funk':
+        queries.push('funk disco', 'james brown', 'parliament funkadelic', 'funk soul');
+        break;
+      case 'rock':
+        queries.push('classic rock', 'alternative rock', 'indie rock', 'rock hits');
+        break;
+      case 'jazz':
+        queries.push('jazz standards', 'smooth jazz', 'jazz fusion', 'bebop');
+        break;
+      case 'pop':
+        queries.push('pop hits', 'mainstream pop', 'pop rock', 'dance pop');
+        break;
+      case 'hip-hop':
+      case 'rap':
+        queries.push('hip hop', 'rap hits', 'urban music', 'hip hop classics');
+        break;
+      case 'électro':
+      case 'house':
+      case 'techno':
+        queries.push('electronic music', 'dance music', 'edm', 'electronic hits');
+        break;
+      default:
+        queries.push(genre);
+    }
+  }
+  
+  // Mood-specific queries
+  if (mood) {
+    switch (mood.toLowerCase()) {
+      case 'joyeux':
+      case 'festif':
+        queries.push('happy songs', 'feel good music', 'upbeat', 'party music');
+        break;
+      case 'calme':
+      case 'relaxant':
+        queries.push('chill music', 'relaxing songs', 'ambient', 'peaceful');
+        break;
+      case 'énergique':
+      case 'motivant':
+        queries.push('energetic music', 'workout songs', 'pump up', 'high energy');
+        break;
+      case 'romantique':
+        queries.push('love songs', 'romantic music', 'ballads', 'slow songs');
+        break;
+      case 'mélancolique':
+      case 'triste':
+        queries.push('sad songs', 'melancholic music', 'emotional', 'indie folk');
+        break;
+      default:
+        queries.push(mood);
+    }
+  }
+  
+  // Context-specific queries from prompt
+  const lowerPrompt = prompt.toLowerCase();
+  
+  if (lowerPrompt.includes('été')) {
+    queries.push('summer hits', 'summer vibes', 'beach music');
+  }
+  if (lowerPrompt.includes('hiver')) {
+    queries.push('winter songs', 'cozy music', 'christmas music');
+  }
+  if (lowerPrompt.includes('sport') || lowerPrompt.includes('gym')) {
+    queries.push('workout music', 'gym songs', 'running music');
+  }
+  if (lowerPrompt.includes('travail') || lowerPrompt.includes('bureau')) {
+    queries.push('focus music', 'work music', 'concentration');
+  }
+  if (lowerPrompt.includes('fête') || lowerPrompt.includes('party')) {
+    queries.push('party hits', 'dance music', 'club music');
+  }
+  if (lowerPrompt.includes('barbecue') || lowerPrompt.includes('weekend')) {
+    queries.push('weekend vibes', 'bbq music', 'chill hits', 'good vibes');
+  }
+  if (lowerPrompt.includes('voiture') || lowerPrompt.includes('route')) {
+    queries.push('road trip music', 'driving songs', 'car music');
+  }
+  
+  // Add some variety with popular searches
+  queries.push('top hits 2024', 'viral songs', 'trending music');
+  
+  // Remove duplicates and limit
+  return [...new Set(queries)].slice(0, 6);
+}
+
 export async function generatePlaylistFromDeezer(
   genre: string | null, 
   mood: string | null, 
-  count: number = 10
+  count: number = 10,
+  prompt: string = ""
 ): Promise<Track[]> {
   try {
-    // Build search queries based on parsed prompt
-    const searchQueries = [];
-    
-    // Base query with genre and mood
-    if (genre && mood) {
-      searchQueries.push(`${genre} ${mood}`);
-    } else if (genre) {
-      searchQueries.push(genre);
-    } else if (mood) {
-      searchQueries.push(mood);
-    }
-    
-    // Add popular/trending queries
-    searchQueries.push("top hits 2024");
-    searchQueries.push("popular music");
-    
-    // If no specific criteria, use general queries
-    if (searchQueries.length === 0) {
-      searchQueries.push("popular hits", "top songs");
-    }
+    const searchQueries = generateSearchQueries(genre, mood, prompt);
+    console.log('Generated search queries:', searchQueries);
     
     const allTracks: Track[] = [];
-    const tracksPerQuery = Math.ceil(count / searchQueries.length);
+    const tracksPerQuery = Math.max(2, Math.ceil(count / searchQueries.length));
     
     // Search tracks for each query
     for (const query of searchQueries) {
       const deezerTracks = await deezerService.searchTracks(query, tracksPerQuery);
       const tracks = deezerTracks.map(track => 
-        convertDeezerTrack(track, query.includes("top") || query.includes("popular") ? "popular" : "search")
+        convertDeezerTrack(track, query.includes("top") || query.includes("hits") || query.includes("trending") ? "popular" : "search")
       );
       allTracks.push(...tracks);
     }
     
-    // Remove duplicates and shuffle
+    // Remove duplicates based on track ID
     const uniqueTracks = allTracks.filter((track, index, self) => 
       index === self.findIndex(t => t.id === track.id)
     );
     
-    return shuffle(uniqueTracks).slice(0, count);
+    // Shuffle and limit to requested count
+    const shuffledTracks = shuffle(uniqueTracks);
+    
+    // Ensure we have enough tracks, if not add some popular hits
+    if (shuffledTracks.length < count) {
+      const additionalTracks = await deezerService.searchTracks('popular hits', count - shuffledTracks.length);
+      const convertedAdditional = additionalTracks
+        .filter(track => !shuffledTracks.some(existing => existing.id === track.id))
+        .map(track => convertDeezerTrack(track, "popular"));
+      shuffledTracks.push(...convertedAdditional);
+    }
+    
+    return shuffledTracks.slice(0, count);
     
   } catch (error) {
     console.error('Error generating playlist from Deezer:', error);
