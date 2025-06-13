@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Track } from "@/lib/generator";
-import { StarIcon, FrameIcon, PlayIcon } from "@radix-ui/react-icons";
+import { Star, Target, Play } from "lucide-react";
 
 export default function PlaylistCard({ title, artist, tag }: Track) {
   return (
@@ -10,11 +10,19 @@ export default function PlaylistCard({ title, artist, tag }: Track) {
         <div className="text-sm text-muted-foreground">{artist}</div>
       </div>
       {tag === "search" ? (
-        <span className="flex items-center gap-1 text-blue-500"><StarIcon /> <span>🎯 Search</span></span>
+        <span className="flex items-center gap-1 text-blue-500">
+          <Target size={16} />
+          <span>Search</span>
+        </span>
       ) : (
-        <span className="flex items-center gap-1 text-red-500"><span>🔥</span> <span>Popular</span></span>
+        <span className="flex items-center gap-1 text-red-500">
+          <Star size={16} />
+          <span>Popular</span>
+        </span>
       )}
-      <Button variant="outline" size="icon" title="Play (simulé)"><PlayIcon /></Button>
+      <Button variant="outline" size="icon" title="Play (simulé)">
+        <Play size={16} />
+      </Button>
     </div>
   );
 } 

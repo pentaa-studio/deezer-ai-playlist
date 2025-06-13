@@ -1,5 +1,15 @@
 import { Track } from "@/lib/generator";
 import { useState, useRef, useEffect } from "react";
+import { 
+  Play, 
+  Pause, 
+  SkipBack, 
+  SkipForward, 
+  Music, 
+  ExternalLink,
+  Copy,
+  Search
+} from "lucide-react";
 
 interface DeezerPlayerProps {
   tracks: Track[];
@@ -65,8 +75,8 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
       {/* Main Player */}
       <div className="bg-card border rounded-lg p-4">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center text-white text-2xl">
-            🎵
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center text-white">
+            <Music size={32} />
           </div>
           <div className="flex-1">
             <h4 className="font-semibold text-lg">{currentTrack.title}</h4>
@@ -79,9 +89,10 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
             href={`https://www.deezer.com/track/${currentTrack.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
           >
-            Ouvrir sur Deezer
+            <ExternalLink size={16} />
+            Deezer
           </a>
         </div>
 
@@ -105,21 +116,21 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
                 className="p-2 bg-muted rounded-full hover:bg-muted/80 transition-colors"
                 title="Morceau précédent"
               >
-                ⏮️
+                <SkipBack size={20} />
               </button>
               <button
                 onClick={togglePlayPause}
                 className="p-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
                 title={isPlaying ? "Pause" : "Play"}
               >
-                {isPlaying ? "⏸️" : "▶️"}
+                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
               </button>
               <button
                 onClick={nextTrack}
                 className="p-2 bg-muted rounded-full hover:bg-muted/80 transition-colors"
                 title="Morceau suivant"
               >
-                ⏭️
+                <SkipForward size={20} />
               </button>
             </div>
           </div>
@@ -133,7 +144,8 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
 
       {/* Deezer Widget for current track */}
       <div className="bg-card border rounded-lg overflow-hidden">
-        <div className="p-2 text-sm font-medium border-b bg-muted">
+        <div className="p-2 text-sm font-medium border-b bg-muted flex items-center gap-2">
+          <Music size={16} />
           Widget Deezer - {currentTrack.title}
         </div>
         <iframe
@@ -149,7 +161,8 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
       
       {/* Playlist */}
       <div className="space-y-2">
-        <p className="text-sm font-medium">
+        <p className="text-sm font-medium flex items-center gap-2">
+          <Music size={16} />
           Playlist ({tracks.length} morceaux) :
         </p>
         
@@ -164,8 +177,8 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
               }`}
               onClick={() => playTrack(idx)}
             >
-              <span className="text-muted-foreground w-6">
-                {idx === currentTrackIndex ? "🎵" : `${idx + 1}.`}
+              <span className="text-muted-foreground w-6 flex items-center justify-center">
+                {idx === currentTrackIndex ? <Music size={16} /> : `${idx + 1}.`}
               </span>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{track.title}</div>
@@ -178,10 +191,10 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
                     e.stopPropagation();
                     playTrack(idx);
                   }}
-                  className="px-2 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                  className="p-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
                   title={`Jouer ${track.title}`}
                 >
-                  ▶️
+                  <Play size={14} />
                 </button>
               </div>
             </div>
@@ -203,8 +216,9 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
             onClick={() => {
               navigator.clipboard.writeText(`https://www.deezer.com/search/${encodeURIComponent(title)}`);
             }}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
           >
+            <Copy size={16} />
             Copier
           </button>
         </div>
@@ -215,9 +229,10 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
             href={`https://www.deezer.com/search/${encodeURIComponent(tracks.map(t => `${t.artist} ${t.title}`).join(' '))}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
           >
-            🎵 Rechercher sur Deezer
+            <Search size={14} />
+            Rechercher sur Deezer
           </a>
         </div>
       </div>
