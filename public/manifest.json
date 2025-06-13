@@ -1,0 +1,40 @@
+{
+  "name": "Text to Playlist - Créateur de Playlists IA",
+  "short_name": "Text to Playlist",
+  "description": "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#a238ff",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment", "productivity"],
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+} 
