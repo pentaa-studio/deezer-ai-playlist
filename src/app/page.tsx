@@ -1,17 +1,19 @@
 "use client";
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useChat } from '@ai-sdk/react'
-import { useState, useEffect, useRef } from 'react';
+import { useChat } from '@ai-sdk/react';
 import DeezerPlayer from '@/components/DeezerPlayer';
 import { Track } from '@/lib/generator';
-import { MessageCircle, Music, Loader2, Send } from 'lucide-react';
+import { Music, Loader2, Send, Zap, Search, TrendingUp } from 'lucide-react';
+import AppIcon from '@/components/AppIcon';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status, append } = useChat();
   const [currentPlaylist, setCurrentPlaylist] = useState<{title: string, tracks: Track[]} | null>(null);
-  const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom of conversation
   const scrollToBottom = () => {
@@ -22,101 +24,106 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
-  // Check if user is asking to generate playlist
-  const checkIfGeneratingPlaylist = (userMessage: string) => {
-    const generateKeywords = [
-      'génère', 'crée', 'fais', 'lance', 'go', 'ok', 'oui', 'parfait', 
-      'c\'est bon', 'allons-y', 'maintenant', 'playlist maintenant'
-    ];
-    
-    return generateKeywords.some(keyword => 
-      userMessage.toLowerCase().includes(keyword)
-    );
+  // Auto-focus input after message is sent
+  useEffect(() => {
+    if (status === "ready" && inputRef.current) {
+      // Small delay to ensure the UI has updated
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [status]);
+
+  // Focus input on initial load
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  // Extract playlist data from tool calls in messages
+  const extractPlaylistFromMessages = () => {
+    // Look for the latest assistant message with tool calls
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      if (message.role === 'assistant' && message.toolInvocations) {
+        for (const toolCall of message.toolInvocations) {
+          if (toolCall.toolName === 'createPlaylist' && 
+              'result' in toolCall && 
+              toolCall.result?.success && 
+              toolCall.result?.playlist) {
+            const playlist = toolCall.result.playlist;
+
+            return {
+              title: playlist.title,
+              tracks: playlist.tracks.map((track: unknown) => {
+                const t = track as { id: number; title: string; artist: string; album: string; preview: string; cover: string };
+                return {
+                  id: t.id,
+                  title: t.title,
+                  artist: t.artist,
+                  album: t.album,
+                  preview: t.preview,
+                  cover: t.cover,
+                  tag: "search" as const
+                };
+              })
+            };
+          }
+        }
+      }
+    }
+    return null;
   };
 
-  // Extract playlist data from assistant messages
-  const extractPlaylistData = (content: string) => {
-    try {
-      // Look for data between markers
-      const startMarker = '---PLAYLIST_DATA---';
-      const endMarker = '---END_PLAYLIST_DATA---';
-      
-      const startIndex = content.indexOf(startMarker);
-      const endIndex = content.indexOf(endMarker);
-      
-      if (startIndex !== -1 && endIndex !== -1) {
-        const jsonStr = content.substring(startIndex + startMarker.length, endIndex).trim();
-        const playlistData = JSON.parse(jsonStr);
-        setCurrentPlaylist(playlistData);
-        setIsGeneratingPlaylist(false); // Stop loading when playlist is ready
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Failed to extract playlist data:', error);
-      setIsGeneratingPlaylist(false);
-      return false;
+  // Update playlist when messages change
+  useEffect(() => {
+    const playlist = extractPlaylistFromMessages();
+    if (playlist) {
+      setCurrentPlaylist(playlist);
     }
-  };
-
-  // Clean description by removing playlist data
-  const cleanDescription = (content: string) => {
-    const startMarker = '---PLAYLIST_DATA---';
-    const startIndex = content.indexOf(startMarker);
-    if (startIndex !== -1) {
-      const cleanedContent = content.substring(0, startIndex).trim();
-      // If we're in the middle of streaming playlist data, keep loading state
-      if (cleanedContent && startIndex > 0) {
-        return cleanedContent;
-      }
-      // If content is empty or just starting playlist data, show loading message
-      return "🎵 Finalisation de votre playlist...";
-    }
-    return content;
-  };
+  }, [messages, extractPlaylistFromMessages]);
 
   // Handle form submission
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Check if user is asking to generate playlist
-    if (checkIfGeneratingPlaylist(input)) {
-      setIsGeneratingPlaylist(true);
-    }
     handleSubmit(e);
   };
 
-  // Check for new assistant messages and extract playlist data
-  useEffect(() => {
-    const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop();
-    if (lastAssistantMessage) {
-      // If message contains playlist data marker but no end marker yet, keep loading
-      const hasStartMarker = lastAssistantMessage.content.includes('---PLAYLIST_DATA---');
-      const hasEndMarker = lastAssistantMessage.content.includes('---END_PLAYLIST_DATA---');
-      
-      if (hasStartMarker && !hasEndMarker && status === "streaming") {
-        // Still streaming playlist data, keep loading state
-        setIsGeneratingPlaylist(true);
-      } else {
-        // Try to extract playlist data
-        extractPlaylistData(lastAssistantMessage.content);
-      }
-    }
-  }, [messages, status]);
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: string) => {
+    append({
+      role: 'user',
+      content: suggestion
+    });
+  };
 
-  // Reset loading state if streaming stops without playlist
-  useEffect(() => {
-    if (status !== "streaming" && isGeneratingPlaylist) {
-      // Check if we actually got a playlist, if not reset loading
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage && !lastMessage.content.includes('---PLAYLIST_DATA---')) {
-        setIsGeneratingPlaylist(false);
-      }
-    }
-  }, [status, isGeneratingPlaylist, messages]);
+
 
   // Check if conversation is in progress
   const hasConversation = messages.length > 0;
   const hasPlaylist = currentPlaylist !== null;
+  const isStreaming = status === "streaming";
+
+  // Get tool call indicators
+  const getToolCallInfo = (message: { toolInvocations?: Array<{ toolName: string; args?: Record<string, unknown> }> }) => {
+    if (!message.toolInvocations) return null;
+    
+    const toolCalls = message.toolInvocations.map((tool: { toolName: string; args?: Record<string, unknown> }) => {
+      switch (tool.toolName) {
+        case 'searchMusic':
+          return { icon: Search, label: `Recherche: ${tool.args?.query}`, color: 'text-blue-500' };
+        case 'createPlaylist':
+          return { icon: Music, label: 'Création de playlist', color: 'text-[#a238ff]' };
+        case 'getPopularTracks':
+          return { icon: TrendingUp, label: `Tendances: ${tool.args?.genre || 'tous genres'}`, color: 'text-green-500' };
+        default:
+          return { icon: Zap, label: tool.toolName, color: 'text-gray-500' };
+      }
+    });
+    
+    return toolCalls;
+  };
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -124,15 +131,13 @@ export default function Home() {
       <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
-            </div>
+            <AppIcon size={32} animated={true} />
             <div>
               <h1 className="text-xl font-bold">
-                Text to <span className="text-[#a238ff]">Playlist</span>
+                Melo - Text to <span className="text-[#a238ff]">Playlist</span>
               </h1>
               <p className="text-sm text-muted-foreground">
-                Créez des playlists avec l&apos;IA
+                Melo - Ton agent IA qui te crée des playlists Deezer sur mesure
               </p>
             </div>
           </div>
@@ -141,51 +146,63 @@ export default function Home() {
           {hasConversation && (
             <div className="flex items-center gap-2 px-3 py-1 bg-[#a238ff]/10 border border-[#a238ff]/20 rounded-full">
               <div className={`w-2 h-2 rounded-full ${
-                isGeneratingPlaylist ? 'bg-orange-500 animate-pulse' : 
+                isStreaming ? 'bg-orange-500 animate-pulse' : 
                 hasPlaylist ? 'bg-green-500' : 'bg-blue-500'
               }`} />
               <span className="text-xs font-medium">
-                {isGeneratingPlaylist ? 'Génération...' : 
-                 hasPlaylist ? 'Playlist prête' : 'En conversation'}
+                {isStreaming ? 'Melo en action...' : 
+                 hasPlaylist ? 'Playlist créée' : 'En conversation'}
               </span>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main content - Split layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left side - Conversation */}
-        <div className="w-96 flex flex-col border-r">
+      {/* Main content - Resizable layout */}
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Left side - Conversation */}
+          <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
+            <div className="h-full flex flex-col border-r">
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-0">
             {messages.length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center max-w-md space-y-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-2xl flex items-center justify-center mx-auto">
-                    <MessageCircle className="w-8 h-8 text-white" />
+                  <div className="mx-auto">
+                    <AppIcon size={64} animated={true} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Commencez une conversation</h2>
+                    <h2 className="text-2xl font-bold mb-2">Melo - Agent Musical IA</h2>
                     <p className="text-muted-foreground mb-6">
-                      Décrivez le type de playlist que vous souhaitez créer
+                      Discutez avec Melo qui peut rechercher de la musique et créer des playlists
                     </p>
                   </div>
                   
                   {/* Quick suggestions */}
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
-                      <p className="font-medium text-sm">🏃‍♂️ Playlist pour le sport</p>
-                      <p className="text-xs text-muted-foreground">Musiques énergiques pour l&apos;entraînement</p>
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Recherche des artistes de rock alternatif")}
+                    >
+                      <p className="font-medium text-sm">🔍 Recherche d&apos;artistes</p>
+                      <p className="text-xs text-muted-foreground">Explorez des artistes spécifiques</p>
                     </div>
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
-                      <p className="font-medium text-sm">💼 Musique de concentration</p>
-                      <p className="text-xs text-muted-foreground">Sons calmes pour travailler</p>
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Crée-moi une playlist énergique pour le sport")}
+                    >
+                      <p className="font-medium text-sm">🎵 Création de playlist</p>
+                      <p className="text-xs text-muted-foreground">Générez des playlists personnalisées</p>
                     </div>
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
-                      <p className="font-medium text-sm">🎉 Playlist de fête</p>
-                      <p className="text-xs text-muted-foreground">Hits dansants pour animer</p>
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Quelles sont les tendances musicales du moment ?")}
+                    >
+                      <p className="font-medium text-sm">📈 Tendances musicales</p>
+                      <p className="text-xs text-muted-foreground">Découvrez les hits du moment</p>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -196,18 +213,33 @@ export default function Home() {
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}>
                     {message.role === 'assistant' && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-full flex items-center justify-center flex-shrink-0">
-                        <Music className="w-4 h-4 text-white" />
+                      <div className="flex-shrink-0">
+                        <AppIcon size={32} />
                       </div>
                     )}
-                    <div className={`max-w-[80%] p-3 rounded-lg ${
-                      message.role === 'user' 
-                        ? 'bg-[#a238ff] text-white' 
-                        : 'bg-muted'
-                    }`}>
-                      <p className="whitespace-pre-wrap text-sm">
-                        {cleanDescription(message.content)}
-                      </p>
+                    <div className={`max-w-[80%] space-y-2`}>
+                      {/* Message content */}
+                      <div className={`p-3 rounded-lg ${
+                        message.role === 'user' 
+                          ? 'bg-[#a238ff] text-white' 
+                          : 'bg-muted'
+                      }`}>
+                        <p className="whitespace-pre-wrap text-sm">
+                          {message.content}
+                        </p>
+                      </div>
+                      
+                                              {/* Tool calls indicators */}
+                        {message.role === 'assistant' && message.toolInvocations && (
+                          <div className="space-y-1">
+                            {getToolCallInfo(message)?.map((tool: { icon: React.ComponentType<{ size: number; className?: string }>; label: string; color: string }, toolIdx: number) => (
+                              <div key={toolIdx} className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded text-xs">
+                                <tool.icon size={12} className={tool.color} />
+                                <span className="text-muted-foreground">{tool.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                     {message.role === 'user' && (
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
@@ -220,35 +252,64 @@ export default function Home() {
               </>
             )}
           </div>
-        </div>
-
-        {/* Right side - Playlist */}
-        <div className="flex-1 flex flex-col bg-card/30">
+          
+          {/* Input area - only for conversation */}
+          <div className="border-t bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
+            <form onSubmit={handleFormSubmit} className="relative">
+              <Input
+                value={input}
+                onChange={handleInputChange}
+                placeholder={
+                  hasConversation 
+                    ? "Continuez la conversation avec Melo..." 
+                    : "Demandez à Melo de rechercher de la musique ou créer une playlist..."
+                }
+                className="pr-12 py-3 text-base"
+                disabled={status === "streaming"}
+                ref={inputRef}
+              />
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={status === "streaming" || !input.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-[#a238ff] hover:bg-[#8b2bdb]"
+              >
+                <Send size={16} />
+              </Button>
+            </form>
+            
+            {/* Helper text */}
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Melo peut rechercher de la musique, créer des playlists et découvrir les tendances
+            </p>
+           </div>
+            </div>
+          </ResizablePanel>
+          
+          <ResizableHandle withHandle />
+          
+          {/* Right side - Playlist */}
+          <ResizablePanel defaultSize={70}>
+            <div className="h-full flex flex-col bg-card/30">
           {/* Playlist header */}
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
-              <Music size={18} />
-              Playlist Générée
+              <AppIcon size={20} />
+              Playlist de Melo
             </h2>
           </div>
           
           {/* Playlist content */}
           <div className="flex-1 overflow-y-auto p-4">
-            {isGeneratingPlaylist ? (
+            {isStreaming ? (
               <div className="flex flex-col items-center justify-center h-full space-y-4">
                 <Loader2 size={32} className="animate-spin text-[#a238ff]" />
                 <div className="text-center">
                   <h3 className="font-semibold text-[#a238ff] mb-2">
-                    {messages.some(m => m.content.includes('---PLAYLIST_DATA---')) 
-                      ? "🎵 Finalisation..."
-                      : "🎵 Création en cours..."
-                    }
+                    🤖 Melo en action...
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {messages.some(m => m.content.includes('---PLAYLIST_DATA---'))
-                      ? "Préparation de l'affichage..."
-                      : "Recherche des meilleurs morceaux..."
-                    }
+                    Melo utilise ses outils pour vous aider
                   </p>
                 </div>
                 <div className="flex space-x-1">
@@ -264,54 +325,24 @@ export default function Home() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
-                  <Music className="w-8 h-8 text-muted-foreground" />
+                <div className="opacity-50">
+                  <AppIcon size={64} />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">Aucune playlist</h3>
                   <p className="text-sm text-muted-foreground">
                     {hasConversation 
-                      ? "Dites 'génère' pour créer votre playlist"
-                      : "Commencez une conversation pour générer une playlist"
+                      ? "Demandez à Melo de créer une playlist"
+                      : "Commencez une conversation avec Melo"
                     }
                   </p>
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Bottom input - ChatGPT style */}
-      <div className="border-t bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
-        <div className="max-w-4xl mx-auto">
-          <form onSubmit={handleFormSubmit} className="relative">
-            <Input
-              value={input}
-              onChange={handleInputChange}
-              placeholder={
-                hasConversation 
-                  ? "Continuez la conversation..." 
-                  : "Décrivez le type de playlist que vous voulez créer..."
-              }
-              className="pr-12 py-3 text-base"
-              disabled={status === "streaming"}
-            />
-            <Button 
-              type="submit" 
-              size="sm"
-              disabled={status === "streaming" || !input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-[#a238ff] hover:bg-[#8b2bdb]"
-            >
-              <Send size={16} />
-            </Button>
-          </form>
-          
-          {/* Helper text */}
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Appuyez sur Entrée pour envoyer • L&apos;IA peut faire des erreurs, vérifiez les informations importantes
-          </p>
-        </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

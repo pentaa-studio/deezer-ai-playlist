@@ -13,16 +13,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-  description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+  title: "Melo - Ton agent IA qui te crée des playlists Deezer sur mesure",
+  description: "Melo est ton assistant IA musical personnel qui crée des playlists Deezer parfaitement adaptées à tes goûts. Discute avec Melo et obtiens des sélections musicales sur mesure en quelques secondes.",
   keywords: [
     "playlist", "musique", "IA", "intelligence artificielle", "Deezer", 
     "génération automatique", "personnalisé", "streaming", "découverte musicale",
-    "playlist generator", "AI music", "music recommendation"
+    "playlist generator", "AI music", "music recommendation", "Melo", "agent musical"
   ],
-  authors: [{ name: "Deezer AI Playlist" }],
-  creator: "Deezer AI Playlist",
-  publisher: "Deezer AI Playlist",
+  authors: [{ name: "Melo - Assistant IA Musical" }],
+  creator: "Melo - Assistant IA Musical",
+  publisher: "Melo - Assistant IA Musical",
   formatDetection: {
     email: false,
     address: false,
@@ -33,16 +33,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+    title: "Melo - Ton agent IA qui te crée des playlists Deezer sur mesure",
+    description: "Melo est ton assistant IA musical personnel qui crée des playlists Deezer parfaitement adaptées à tes goûts. Discute avec Melo et obtiens des sélections musicales sur mesure en quelques secondes.",
     url: '/',
-    siteName: 'Text to Playlist',
+    siteName: 'Melo',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Text to Playlist - Créateur de Playlists IA avec Deezer',
+        alt: 'Melo - Ton agent IA qui te crée des playlists Deezer sur mesure',
       },
     ],
     locale: 'fr_FR',
@@ -50,8 +50,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts.",
+    title: "Melo - Ton agent IA qui te crée des playlists Deezer sur mesure",
+    description: "Melo est ton assistant IA musical personnel qui crée des playlists Deezer parfaitement adaptées à tes goûts. Discute avec Melo et obtiens des sélections musicales sur mesure.",
     images: ['/og-image.png'],
   },
   robots: {
@@ -79,14 +79,14 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.svg" sizes="any" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#a238ff" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Text to Playlist" />
+        <meta name="apple-mobile-web-app-title" content="Melo" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body

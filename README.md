@@ -1,56 +1,120 @@
-# Text to Playlist
+# Melo - Text to Playlist
 
-Prototype Next.js 15 (App Router, TypeScript) pour générer des playlists à partir d'un prompt textuel, enrichies par l'IA (Vercel AI SDK + OpenAI).
+Application Next.js 15 (App Router, TypeScript) avec Melo, votre agent IA qui crée des playlists Deezer sur mesure à partir de vos demandes textuelles.
 
 ## Fonctionnalités
-- Saisie d'un prompt (ex : "Playlist funk joyeuse pour l'été")
-- Génération d'une playlist :
-  - 40% morceaux familiers (`/data/favourites.json`)
-  - 60% morceaux tendances (`/data/buzz_mock.json`)
-- Description narrative générée par GPT
-- UI moderne avec Shadcn/UI
-- Données locales (pas de DB, pas d'auth)
+- **Conversation avec Melo** : Agent IA musical conversationnel
+- **Recherche musicale** : Intégration API Deezer pour rechercher artistes, titres, genres
+- **Génération de playlists** : Création automatique basée sur vos goûts et contexte
+- **Tendances musicales** : Découverte des hits du moment
+- **Interface moderne** : UI resizable avec covers d'albums, lecteur audio
+- **Function calling** : Utilisation intelligente des outils par l'IA
+- **Optimisations** : Composant Image Next.js, troncature intelligente
 
 ## Stack
-- Next.js 15 (App Router)
-- TypeScript
-- Shadcn/UI
-- Vercel AI SDK (`ai`, `@ai-sdk/react`, `@ai-sdk/openai`)
-- OpenAI (clé API requise)
+- **Next.js 15** (App Router, TypeScript)
+- **Vercel AI SDK** (`ai`, `@ai-sdk/react`, `@ai-sdk/openai`)
+- **OpenAI GPT-4** (function calling)
+- **API Deezer** (recherche musicale, covers)
+- **Shadcn/UI** + **Tailwind CSS**
+- **Lucide Icons** + **AppIcon** personnalisé
+
+## Workflow de développement
+
+### ⚠️ Important : Branches et Pull Requests
+
+- **Branche principale** : `main` (protégée)
+- **Branche de développement** : `dev`
+- **Workflow** :
+  1. Partir de la branche `dev` pour vos développements
+  2. Créer une feature branch depuis `dev`
+  3. Soumettre vos Pull Requests vers `dev`
+  4. Seul **@jeemclr** peut valider et merger sur `main`
+
+```bash
+# Cloner et basculer sur dev
+git clone <repo-url>
+cd deezer-ai-playlist
+git checkout dev
+
+# Créer une feature branch
+git checkout -b feature/ma-nouvelle-fonctionnalite
+
+# Développer, commit, push
+git add .
+git commit -m "feat: ma nouvelle fonctionnalité"
+git push origin feature/ma-nouvelle-fonctionnalite
+
+# Créer une PR vers dev (pas main !)
+```
 
 ## Lancer le projet localement
 
-1. Installer les dépendances :
+1. **Cloner depuis dev** :
+   ```bash
+   git clone <repo-url>
+   cd deezer-ai-playlist
+   git checkout dev
+   ```
+
+2. **Installer les dépendances** :
    ```bash
    pnpm install
    # ou npm install
    ```
-2. Copier le fichier `.env.example` en `.env.local` et renseigner votre clé OpenAI :
+
+3. **Configuration environnement** :
    ```bash
    cp .env.example .env.local
-   # puis éditez .env.local
+   # puis éditez .env.local avec votre clé OpenAI
    ```
-3. Démarrer le serveur de dev :
+
+4. **Démarrer le serveur** :
    ```bash
    pnpm dev
    # ou npm run dev
    ```
 
 ## Structure principale
-- `/app/page.tsx` : UI principale
-- `/app/api/chat/route.ts` : API playlist + GPT
-- `/lib/parser.ts` : extraction mood/style/genre
-- `/lib/generator.ts` : génération playlist 40/60
-- `/data/favourites.json` : 20 titres familiers
-- `/data/buzz_mock.json` : 30 titres "buzz"
-- `/components/PlaylistCard.tsx` : affichage morceau
-- `/lib/useVoiceInput.ts` : hook vocal (préparé)
+
+### 🎯 Pages et API
+- `/app/page.tsx` : Interface principale avec layout resizable
+- `/app/api/chat/route.ts` : API conversationnelle avec function calling
+- `/app/layout.tsx` : Configuration SEO et métadonnées
+
+### 🧩 Composants
+- `/components/DeezerPlayer.tsx` : Lecteur avec covers et liste optimisée
+- `/components/AppIcon.tsx` : Icône personnalisée Melo (réutilisable)
+- `/components/ui/` : Composants Shadcn/UI (resizable, input, button...)
+
+### 🔧 Logique métier
+- `/lib/deezer.ts` : Service API Deezer (recherche, tracks)
+- `/lib/generator.ts` : Génération intelligente de playlists
+- `/data/` : Données mock pour fallback
+
+### ⚙️ Configuration
+- `next.config.ts` : Configuration images Deezer
+- `components.json` : Configuration Shadcn/UI
 
 ## Sécurité
 - **Ne jamais commiter de clé API dans le dépôt.**
 - Utilisez `.env.local` (privé) pour vos clés, et `.env.example` (public) comme référence.
 
-## TODO
-- Améliorer parsing avec GPT (function calling)
-- Ajouter la reconnaissance vocale
-- UI/UX avancée
+## Fonctionnalités récentes
+
+### ✅ Implémenté
+- **Function calling** avec OpenAI (searchMusic, createPlaylist, getPopularTracks)
+- **Interface resizable** avec panneaux ajustables
+- **Covers d'albums** avec composant Image Next.js optimisé
+- **Auto-focus intelligent** sur l'input après envoi
+- **Suggestions cliquables** pour démarrer rapidement
+- **Troncature intelligente** pour éviter les débordements
+- **Icône personnalisée** Melo avec animations
+- **SEO optimisé** avec métadonnées complètes
+
+### 🚧 En cours / TODO
+- Reconnaissance vocale
+- Sauvegarde des playlists
+- Partage social
+- Mode sombre/clair
+- Historique des conversations
