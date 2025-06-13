@@ -46,15 +46,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
   const currentTrack = tracks[currentTrackIndex];
   
 
-  // Debug: log current track cover
-  useEffect(() => {
-    console.log('Current track:', {
-      title: currentTrack.title,
-      artist: currentTrack.artist,
-      cover: currentTrack.cover,
-      hasCover: !!currentTrack.cover
-    });
-  }, [currentTrack]);
+
 
   const playTrack = (index: number) => {
     setCurrentTrackIndex(index);
@@ -100,7 +92,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
                 height={64}
                 className="object-cover"
                 onError={() => {
-                  console.log('Cover failed to load:', currentTrack.cover);
+                  // Silently handle error - fallback will be shown
                 }}
               />
             ) : (
@@ -207,7 +199,7 @@ export default function DeezerPlayer({ tracks, title }: DeezerPlayerProps) {
                     height={40}
                     className="object-cover"
                     onError={() => {
-                      console.log('Thumbnail cover failed to load:', track.cover);
+                      // Silently handle error - fallback will be shown
                     }}
                   />
                 ) : (

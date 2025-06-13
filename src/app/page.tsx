@@ -53,6 +53,7 @@ export default function Home() {
               toolCall.result?.success && 
               toolCall.result?.playlist) {
             const playlist = toolCall.result.playlist;
+
             return {
               title: playlist.title,
               tracks: playlist.tracks.map((track: any) => ({
@@ -61,6 +62,7 @@ export default function Home() {
                 artist: track.artist,
                 album: track.album,
                 preview: track.preview,
+                cover: track.cover, // 🔥 IMPORTANT: Ajouter le cover ici !
                 tag: "search" as const
               }))
             };
@@ -92,6 +94,8 @@ export default function Home() {
       content: suggestion
     });
   };
+
+
 
   // Check if conversation is in progress
   const hasConversation = messages.length > 0;
@@ -195,6 +199,7 @@ export default function Home() {
                       <p className="font-medium text-sm">📈 Tendances musicales</p>
                       <p className="text-xs text-muted-foreground">Découvrez les hits du moment</p>
                     </div>
+
                   </div>
                 </div>
               </div>
