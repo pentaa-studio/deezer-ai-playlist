@@ -13,8 +13,62 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Text to Playlist",
-  description: "Générez des playlists à partir d'un prompt textuel.",
+  title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
+  description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+  keywords: [
+    "playlist", "musique", "IA", "intelligence artificielle", "Deezer", 
+    "génération automatique", "personnalisé", "streaming", "découverte musicale",
+    "playlist generator", "AI music", "music recommendation"
+  ],
+  authors: [{ name: "Deezer AI Playlist" }],
+  creator: "Deezer AI Playlist",
+  publisher: "Deezer AI Playlist",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://deezer-ai-playlist.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
+    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+    url: '/',
+    siteName: 'Text to Playlist',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Text to Playlist - Créateur de Playlists IA avec Deezer',
+      },
+    ],
+    locale: 'fr_FR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
+    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts.",
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    // google: 'your-google-verification-code',
+    // yandex: 'your-yandex-verification-code',
+  },
 };
 
 export default function RootLayout({
@@ -24,7 +78,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#a238ff" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Text to Playlist" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
