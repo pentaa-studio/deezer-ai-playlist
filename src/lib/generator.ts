@@ -18,7 +18,7 @@ function convertDeezerTrack(deezerTrack: DeezerTrack, tag: "search" | "popular")
     artist: deezerTrack.artist.name,
     album: deezerTrack.album.title,
     preview: deezerTrack.preview,
-    cover: deezerTrack.album.cover_medium || deezerTrack.album.cover,
+    cover: deezerTrack.album.cover_medium || deezerTrack.album.cover_small || deezerTrack.album.cover,
     tag
   };
 }

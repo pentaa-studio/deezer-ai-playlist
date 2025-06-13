@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-  description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+  title: "Text to Playlist - Melo, votre assistant musical IA",
+  description: "Créez des playlists personnalisées en discutant avec Melo, votre assistant IA musical. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
   keywords: [
     "playlist", "musique", "IA", "intelligence artificielle", "Deezer", 
     "génération automatique", "personnalisé", "streaming", "découverte musicale",
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
+    title: "Text to Playlist - Melo, votre assistant musical IA",
+    description: "Créez des playlists personnalisées en discutant avec Melo, votre assistant IA musical. Générez automatiquement des sélections musicales parfaites basées sur vos goûts et découvrez-les sur Deezer.",
     url: '/',
     siteName: 'Text to Playlist',
     images: [
@@ -50,8 +50,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Text to Playlist - Créateur de Playlists IA avec Deezer",
-    description: "Créez des playlists personnalisées en discutant avec notre IA. Générez automatiquement des sélections musicales parfaites basées sur vos goûts.",
+    title: "Text to Playlist - Melo, votre assistant musical IA",
+    description: "Créez des playlists personnalisées en discutant avec Melo, votre assistant IA musical. Générez automatiquement des sélections musicales parfaites basées sur vos goûts.",
     images: ['/og-image.png'],
   },
   robots: {

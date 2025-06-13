@@ -10,9 +10,10 @@ import AppIcon from '@/components/AppIcon';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status, append } = useChat();
   const [currentPlaylist, setCurrentPlaylist] = useState<{title: string, tracks: Track[]} | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom of conversation
   const scrollToBottom = () => {
@@ -22,6 +23,23 @@ export default function Home() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Auto-focus input after message is sent
+  useEffect(() => {
+    if (status === "ready" && inputRef.current) {
+      // Small delay to ensure the UI has updated
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [status]);
+
+  // Focus input on initial load
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   // Extract playlist data from tool calls in messages
   const extractPlaylistFromMessages = () => {
@@ -67,6 +85,14 @@ export default function Home() {
     handleSubmit(e);
   };
 
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: string) => {
+    append({
+      role: 'user',
+      content: suggestion
+    });
+  };
+
   // Check if conversation is in progress
   const hasConversation = messages.length > 0;
   const hasPlaylist = currentPlaylist !== null;
@@ -101,10 +127,10 @@ export default function Home() {
             <AppIcon size={32} animated={true} />
             <div>
               <h1 className="text-xl font-bold">
-                Text to <span className="text-[#a238ff]">Playlist</span>
+                Melo - Text to <span className="text-[#a238ff]">Playlist</span>
               </h1>
               <p className="text-sm text-muted-foreground">
-                Agent IA musical avec function calling
+                Melo - Ton agent IA qui te crée des playlists Deezer sur mesure
               </p>
             </div>
           </div>
@@ -117,7 +143,7 @@ export default function Home() {
                 hasPlaylist ? 'bg-green-500' : 'bg-blue-500'
               }`} />
               <span className="text-xs font-medium">
-                {isStreaming ? 'Agent en action...' : 
+                {isStreaming ? 'Melo en action...' : 
                  hasPlaylist ? 'Playlist créée' : 'En conversation'}
               </span>
             </div>
@@ -140,23 +166,32 @@ export default function Home() {
                     <AppIcon size={64} animated={true} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Agent Musical IA</h2>
+                    <h2 className="text-2xl font-bold mb-2">Melo - Agent Musical IA</h2>
                     <p className="text-muted-foreground mb-6">
-                      Discutez avec l&apos;agent qui peut rechercher de la musique et créer des playlists
+                      Discutez avec Melo qui peut rechercher de la musique et créer des playlists
                     </p>
                   </div>
                   
                   {/* Quick suggestions */}
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Recherche des artistes de rock alternatif")}
+                    >
                       <p className="font-medium text-sm">🔍 Recherche d&apos;artistes</p>
                       <p className="text-xs text-muted-foreground">Explorez des artistes spécifiques</p>
                     </div>
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Crée-moi une playlist énergique pour le sport")}
+                    >
                       <p className="font-medium text-sm">🎵 Création de playlist</p>
                       <p className="text-xs text-muted-foreground">Générez des playlists personnalisées</p>
                     </div>
-                    <div className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left">
+                    <div 
+                      className="p-3 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer text-left"
+                      onClick={() => handleSuggestionClick("Quelles sont les tendances musicales du moment ?")}
+                    >
                       <p className="font-medium text-sm">📈 Tendances musicales</p>
                       <p className="text-xs text-muted-foreground">Découvrez les hits du moment</p>
                     </div>
@@ -218,11 +253,12 @@ export default function Home() {
                 onChange={handleInputChange}
                 placeholder={
                   hasConversation 
-                    ? "Continuez la conversation avec TtP..." 
-                    : "Demandez à TtP de rechercher de la musique ou créer une playlist..."
+                    ? "Continuez la conversation avec Melo..." 
+                    : "Demandez à Melo de rechercher de la musique ou créer une playlist..."
                 }
                 className="pr-12 py-3 text-base"
                 disabled={status === "streaming"}
+                ref={inputRef}
               />
               <Button 
                 type="submit" 
@@ -236,8 +272,8 @@ export default function Home() {
             
             {/* Helper text */}
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              L&apos;agent peut rechercher de la musique, créer des playlists et découvrir les tendances
-                         </p>
+              Melo peut rechercher de la musique, créer des playlists et découvrir les tendances
+            </p>
            </div>
             </div>
           </ResizablePanel>
@@ -251,7 +287,7 @@ export default function Home() {
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
               <AppIcon size={20} />
-              Playlist de l&apos;Agent
+              Playlist de Melo
             </h2>
           </div>
           
@@ -262,10 +298,10 @@ export default function Home() {
                 <Loader2 size={32} className="animate-spin text-[#a238ff]" />
                 <div className="text-center">
                   <h3 className="font-semibold text-[#a238ff] mb-2">
-                    🤖 Agent en action...
+                    🤖 Melo en action...
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    L&apos;agent utilise ses outils pour vous aider
+                    Melo utilise ses outils pour vous aider
                   </p>
                 </div>
                 <div className="flex space-x-1">
@@ -288,8 +324,8 @@ export default function Home() {
                   <h3 className="font-semibold mb-2">Aucune playlist</h3>
                   <p className="text-sm text-muted-foreground">
                     {hasConversation 
-                      ? "Demandez à l'agent de créer une playlist"
-                      : "Commencez une conversation avec l'agent musical"
+                      ? "Demandez à Melo de créer une playlist"
+                      : "Commencez une conversation avec Melo"
                     }
                   </p>
                 </div>
