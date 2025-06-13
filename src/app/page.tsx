@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import DeezerPlayer from '@/components/DeezerPlayer';
 import { Track } from '@/lib/generator';
 import { MessageCircle, Music, Loader2, Send, Zap, Search, TrendingUp } from 'lucide-react';
+import AppIcon from '@/components/AppIcon';
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat();
@@ -96,9 +97,7 @@ export default function Home() {
       <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-lg flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
-            </div>
+            <AppIcon size={32} animated={true} />
             <div>
               <h1 className="text-xl font-bold">
                 Text to <span className="text-[#a238ff]">Playlist</span>
@@ -130,12 +129,12 @@ export default function Home() {
         {/* Left side - Conversation */}
         <div className="w-96 flex flex-col border-r">
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-0">
             {messages.length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center max-w-md space-y-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-2xl flex items-center justify-center mx-auto">
-                    <MessageCircle className="w-8 h-8 text-white" />
+                  <div className="mx-auto">
+                    <AppIcon size={64} animated={true} />
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Agent Musical IA</h2>
@@ -168,8 +167,8 @@ export default function Home() {
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}>
                     {message.role === 'assistant' && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-[#a238ff] to-[#8b2bdb] rounded-full flex items-center justify-center flex-shrink-0">
-                        <Music className="w-4 h-4 text-white" />
+                      <div className="flex-shrink-0">
+                        <AppIcon size={32} />
                       </div>
                     )}
                     <div className={`max-w-[80%] space-y-2`}>
@@ -207,6 +206,36 @@ export default function Home() {
               </>
             )}
           </div>
+          
+          {/* Input area - only for conversation */}
+          <div className="border-t bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
+            <form onSubmit={handleFormSubmit} className="relative">
+              <Input
+                value={input}
+                onChange={handleInputChange}
+                placeholder={
+                  hasConversation 
+                    ? "Continuez la conversation avec l'agent..." 
+                    : "Demandez à l'agent de rechercher de la musique ou créer une playlist..."
+                }
+                className="pr-12 py-3 text-base"
+                disabled={status === "streaming"}
+              />
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={status === "streaming" || !input.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-[#a238ff] hover:bg-[#8b2bdb]"
+              >
+                <Send size={16} />
+              </Button>
+            </form>
+            
+            {/* Helper text */}
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              L&apos;agent peut rechercher de la musique, créer des playlists et découvrir les tendances
+            </p>
+          </div>
         </div>
 
         {/* Right side - Playlist */}
@@ -214,7 +243,7 @@ export default function Home() {
           {/* Playlist header */}
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
-              <Music size={18} />
+              <AppIcon size={20} />
               Playlist de l&apos;Agent
             </h2>
           </div>
@@ -245,8 +274,8 @@ export default function Home() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
-                  <Music className="w-8 h-8 text-muted-foreground" />
+                <div className="opacity-50">
+                  <AppIcon size={64} />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">Aucune playlist</h3>
@@ -263,37 +292,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bottom input - ChatGPT style */}
-      <div className="border-t bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 p-4">
-        <div className="max-w-4xl mx-auto">
-          <form onSubmit={handleFormSubmit} className="relative">
-            <Input
-              value={input}
-              onChange={handleInputChange}
-              placeholder={
-                hasConversation 
-                  ? "Continuez la conversation avec l'agent..." 
-                  : "Demandez à l'agent de rechercher de la musique ou créer une playlist..."
-              }
-              className="pr-12 py-3 text-base"
-              disabled={status === "streaming"}
-            />
-            <Button 
-              type="submit" 
-              size="sm"
-              disabled={status === "streaming" || !input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 bg-[#a238ff] hover:bg-[#8b2bdb]"
-            >
-              <Send size={16} />
-            </Button>
-          </form>
-          
-          {/* Helper text */}
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            L&apos;agent peut rechercher de la musique, créer des playlists et découvrir les tendances • Appuyez sur Entrée pour envoyer
-          </p>
-        </div>
-      </div>
+
     </div>
   );
 }
