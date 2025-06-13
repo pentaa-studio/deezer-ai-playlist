@@ -9,37 +9,31 @@ import { generatePlaylistFromDeezer } from '@/lib/generator';
 
 export const runtime = 'edge';
 
-// Check if user wants to generate playlist based on conversation
-function shouldGeneratePlaylist(messages: Array<{role: string, content: string}>): boolean {
-  const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-  const conversationLength = messages.length;
-  
-  // Generate playlist if:
-  // 1. User explicitly asks to generate/create playlist
-  // 2. User confirms after AI questions
-  // 3. Conversation has enough context (3+ exchanges)
-  
-  const generateKeywords = [
-    'génère', 'crée', 'fais', 'lance', 'go', 'ok', 'oui', 'parfait', 
-    'c\'est bon', 'allons-y', 'maintenant', 'playlist maintenant'
-  ];
-  
-  const hasGenerateKeyword = generateKeywords.some(keyword => 
-    lastUserMessage.toLowerCase().includes(keyword)
-  );
-  
-  return hasGenerateKeyword || conversationLength >= 5;
-}
+// Unused functions - kept for future use
+// function shouldGeneratePlaylist(messages: Array<{role: string, content: string}>): boolean {
+//   const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+//   const conversationLength = messages.length;
+//   
+//   const generateKeywords = [
+//     'génère', 'crée', 'fais', 'lance', 'go', 'ok', 'oui', 'parfait', 
+//     'c\'est bon', 'allons-y', 'maintenant', 'playlist maintenant'
+//   ];
+//   
+//   const hasGenerateKeyword = generateKeywords.some(keyword => 
+//     lastUserMessage.toLowerCase().includes(keyword)
+//   );
+//   
+//   return hasGenerateKeyword || conversationLength >= 5;
+// }
 
-// Extract playlist requirements from conversation
-function extractPlaylistContext(messages: Array<{role: string, content: string}>): string {
-  const userMessages = messages
-    .filter(m => m.role === 'user')
-    .map(m => m.content)
-    .join(' ');
-  
-  return userMessages;
-}
+// function extractPlaylistContext(messages: Array<{role: string, content: string}>): string {
+//   const userMessages = messages
+//     .filter(m => m.role === 'user')
+//     .map(m => m.content)
+//     .join(' ');
+//   
+//   return userMessages;
+// }
 
 export async function POST(req: Request) {
   try {
@@ -187,7 +181,7 @@ Quand utiliser les outils :
         })
       },
 
-      onFinish: async ({ finishReason, usage, text, toolCalls, toolResults }) => {
+      onFinish: async ({ finishReason, toolCalls, toolResults }) => {
         console.log('Finish reason:', finishReason);
         console.log('Tool calls:', toolCalls?.length || 0);
         

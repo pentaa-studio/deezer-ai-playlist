@@ -1,11 +1,11 @@
 "use client";
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useChat } from '@ai-sdk/react'
-import { useState, useEffect, useRef } from 'react';
+import { useChat } from '@ai-sdk/react';
 import DeezerPlayer from '@/components/DeezerPlayer';
 import { Track } from '@/lib/generator';
-import { MessageCircle, Music, Loader2, Send, Zap, Search, TrendingUp } from 'lucide-react';
+import { Music, Loader2, Send, Zap, Search, TrendingUp } from 'lucide-react';
 import AppIcon from '@/components/AppIcon';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
@@ -56,15 +56,18 @@ export default function Home() {
 
             return {
               title: playlist.title,
-              tracks: playlist.tracks.map((track: any) => ({
-                id: track.id,
-                title: track.title,
-                artist: track.artist,
-                album: track.album,
-                preview: track.preview,
-                cover: track.cover, // 🔥 IMPORTANT: Ajouter le cover ici !
-                tag: "search" as const
-              }))
+              tracks: playlist.tracks.map((track: unknown) => {
+                const t = track as { id: number; title: string; artist: string; album: string; preview: string; cover: string };
+                return {
+                  id: t.id,
+                  title: t.title,
+                  artist: t.artist,
+                  album: t.album,
+                  preview: t.preview,
+                  cover: t.cover,
+                  tag: "search" as const
+                };
+              })
             };
           }
         }
@@ -79,7 +82,7 @@ export default function Home() {
     if (playlist) {
       setCurrentPlaylist(playlist);
     }
-  }, [messages]);
+  }, [messages, extractPlaylistFromMessages]);
 
   // Handle form submission
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -103,10 +106,10 @@ export default function Home() {
   const isStreaming = status === "streaming";
 
   // Get tool call indicators
-  const getToolCallInfo = (message: any) => {
+  const getToolCallInfo = (message: { toolInvocations?: Array<{ toolName: string; args?: Record<string, unknown> }> }) => {
     if (!message.toolInvocations) return null;
     
-    const toolCalls = message.toolInvocations.map((tool: any) => {
+    const toolCalls = message.toolInvocations.map((tool: { toolName: string; args?: Record<string, unknown> }) => {
       switch (tool.toolName) {
         case 'searchMusic':
           return { icon: Search, label: `Recherche: ${tool.args?.query}`, color: 'text-blue-500' };
@@ -229,7 +232,7 @@ export default function Home() {
                                               {/* Tool calls indicators */}
                         {message.role === 'assistant' && message.toolInvocations && (
                           <div className="space-y-1">
-                            {getToolCallInfo(message)?.map((tool: any, toolIdx: number) => (
+                            {getToolCallInfo(message)?.map((tool: { icon: React.ComponentType<{ size: number; className?: string }>; label: string; color: string }, toolIdx: number) => (
                               <div key={toolIdx} className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded text-xs">
                                 <tool.icon size={12} className={tool.color} />
                                 <span className="text-muted-foreground">{tool.label}</span>
